@@ -16,16 +16,25 @@ BSD license, check license.txt for more information
 All text above, and the splash screen must be included in any redistribution
 *********************************************************************/
 
+#include <SPI.h>
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 
-#define OLED_DC 11
-#define OLED_CS 12
-#define OLED_CLK 10
-#define OLED_MOSI 9
+// If using software SPI (the default case):
+#define OLED_MOSI   9
+#define OLED_CLK   10
+#define OLED_DC    11
+#define OLED_CS    12
 #define OLED_RESET 13
 Adafruit_SSD1306 display(OLED_MOSI, OLED_CLK, OLED_DC, OLED_RESET, OLED_CS);
+
+/* Uncomment this block to use hardware SPI
+#define OLED_DC     6
+#define OLED_CS     7
+#define OLED_RESET  8
+Adafruit_SSD1306 display(OLED_DC, OLED_RESET, OLED_CS);
+*/
 
 #define NUMFLAKES 10
 #define XPOS 0
@@ -34,9 +43,23 @@ Adafruit_SSD1306 display(OLED_MOSI, OLED_CLK, OLED_DC, OLED_RESET, OLED_CS);
 
 #define LOGO16_GLCD_HEIGHT 16 
 #define LOGO16_GLCD_WIDTH  16 
-static unsigned char __attribute__ ((progmem)) logo16_glcd_bmp[]={
-0x30, 0xf0, 0xf0, 0xf0, 0xf0, 0x30, 0xf8, 0xbe, 0x9f, 0xff, 0xf8, 0xc0, 0xc0, 0xc0, 0x80, 0x00, 
-0x20, 0x3c, 0x3f, 0x3f, 0x1f, 0x19, 0x1f, 0x7b, 0xfb, 0xfe, 0xfe, 0x07, 0x07, 0x07, 0x03, 0x00, };
+static const unsigned char PROGMEM logo16_glcd_bmp[] =
+{ B00000000, B11000000,
+  B00000001, B11000000,
+  B00000001, B11000000,
+  B00000011, B11100000,
+  B11110011, B11100000,
+  B11111110, B11111000,
+  B01111110, B11111111,
+  B00110011, B10011111,
+  B00011111, B11111100,
+  B00001101, B01110000,
+  B00011011, B10100000,
+  B00111111, B11100000,
+  B00111111, B11110000,
+  B01111100, B11110000,
+  B01110000, B01110000,
+  B00000000, B00110000 };
 
 #if (SSD1306_LCDHEIGHT != 32)
 #error("Height incorrect, please fix Adafruit_SSD1306.h!");
@@ -156,13 +179,12 @@ void loop() {
 
 void testdrawbitmap(const uint8_t *bitmap, uint8_t w, uint8_t h) {
   uint8_t icons[NUMFLAKES][3];
-  srandom(666);     // whatever seed
  
   // initialize
   for (uint8_t f=0; f< NUMFLAKES; f++) {
-    icons[f][XPOS] = random() % display.width();
+    icons[f][XPOS] = random(display.width());
     icons[f][YPOS] = 0;
-    icons[f][DELTAY] = random() % 5 + 1;
+    icons[f][DELTAY] = random(5) + 1;
     
     Serial.print("x: ");
     Serial.print(icons[f][XPOS], DEC);
@@ -187,9 +209,9 @@ void testdrawbitmap(const uint8_t *bitmap, uint8_t w, uint8_t h) {
       icons[f][YPOS] += icons[f][DELTAY];
       // if its gone, reinit
       if (icons[f][YPOS] > display.height()) {
-	icons[f][XPOS] = random() % display.width();
+	icons[f][XPOS] = random(display.width());
 	icons[f][YPOS] = 0;
-	icons[f][DELTAY] = random() % 5 + 1;
+	icons[f][DELTAY] = random(5) + 1;
       }
     }
    }
