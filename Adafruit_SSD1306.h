@@ -18,8 +18,10 @@ All text above, and the splash screen must be included in any redistribution
 
 #if ARDUINO >= 100
  #include "Arduino.h"
+ #define WIRE_WRITE Wire.write
 #else
  #include "WProgram.h"
+  #define WIRE_WRITE Wire.send
 #endif
 
 #ifdef __SAM3X8E__
@@ -35,6 +37,7 @@ All text above, and the splash screen must be included in any redistribution
 
 #define BLACK 0
 #define WHITE 1
+#define INVERSE 2
 
 #define SSD1306_I2C_ADDRESS   0x3C	// 011110+SA0+RW - 0x3C or 0x3D
 // Address for 128x32 is 0x3C
@@ -51,15 +54,18 @@ All text above, and the splash screen must be included in any redistribution
 
     SSD1306_128_32  128x32 pixel display
 
+    SSD1306_96_16
+
     -----------------------------------------------------------------------*/
    #define SSD1306_128_64
 //   #define SSD1306_128_32
+//   #define SSD1306_96_16
 /*=========================================================================*/
 
 #if defined SSD1306_128_64 && defined SSD1306_128_32
   #error "Only one SSD1306 display can be specified at once in SSD1306.h"
 #endif
-#if !defined SSD1306_128_64 && !defined SSD1306_128_32
+#if !defined SSD1306_128_64 && !defined SSD1306_128_32 && !defined SSD1306_96_16
   #error "At least one SSD1306 display must be specified in SSD1306.h"
 #endif
 
@@ -70,6 +76,10 @@ All text above, and the splash screen must be included in any redistribution
 #if defined SSD1306_128_32
   #define SSD1306_LCDWIDTH                  128
   #define SSD1306_LCDHEIGHT                 32
+#endif
+#if defined SSD1306_96_16
+  #define SSD1306_LCDWIDTH                  96
+  #define SSD1306_LCDHEIGHT                 16
 #endif
 
 #define SSD1306_SETCONTRAST 0x81
@@ -124,7 +134,7 @@ class Adafruit_SSD1306 : public Adafruit_GFX {
   Adafruit_SSD1306(int8_t DC, int8_t RST, int8_t CS);
   Adafruit_SSD1306(int8_t RST);
 
-  void begin(uint8_t switchvcc = SSD1306_SWITCHCAPVCC, uint8_t i2caddr = SSD1306_I2C_ADDRESS);
+  void begin(uint8_t switchvcc = SSD1306_SWITCHCAPVCC, uint8_t i2caddr = SSD1306_I2C_ADDRESS, bool reset=true);
   void ssd1306_command(uint8_t c);
   void ssd1306_data(uint8_t c);
 
